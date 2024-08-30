@@ -13,19 +13,31 @@ include $(TOP)/py/py.mk
 # Define toolchain and other tools.
 CROSS_COMPILE ?= arm-none-eabi-
 
+DEF  = -DAM_PART_APOLLO3
+DEF += -DAM_PACKAGE_BGA
+DEF += -Dgcc
+
+INC  = -I.
+INC += -I$(TOP)
+INC += -I$(BUILD)
+INC += -Iambiq/mcu/apollo3
+INC += -Iambiq/devices
+INC += -Iambiq/utils
+INC += -Iambiq/boards/apollo3_evb/bsp
+INC += -Iambiq/CMSIS/AmbiqMicro/Include
+INC += -Iambiq/CMSIS/ARM/Include
+
 # Set CFLAGS.
-CFLAGS += -I. -I$(TOP) -I$(BUILD)
-CFLAGS += -Wall -Werror -std=c99 -nostdlib -Dgcc
-CSUPEROPT = -Os # save some code space for performance-critical code
+CFLAGS += $(DEF) $(INC) -Wall -std=c99 -nostdlib
 CFLAGS += -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float
+CFLAGS += -ffunction-sections -fdata-sections -fomit-frame-pointer
 CSUPEROPT = -Os # save some code space for performance-critical code
 
 # Select debugging or optimisation build.
 ifeq ($(DEBUG), 1)
-CFLAGS += -Og
+CFLAGS += -g
 else
 CFLAGS += -Os -DNDEBUG
-CFLAGS += -ffunction-sections -fdata-sections -fomit-frame-pointer
 endif
 
 # Set linker flags.
@@ -41,7 +53,14 @@ SRC_C = \
 	shared/readline/readline.c \
 	shared/runtime/pyexec.c \
 	shared/runtime/stdout_helpers.c \
-    shared/libc/string0.c
+    shared/libc/string0.c \
+    $(wildcard ambiq/mcu/apollo3/hal/*.c) \
+    $(wildcard ambiq/boards/apollo3_evb/bsp/*.c) \
+    ambiq/utils/am_util_stdio.c
+
+#   ambiq/CMSIS/AmbiqMicro/Source/
+#   ambiq/utils/
+#   ambiq/devices/
 
 SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c
 
@@ -51,6 +70,9 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 # Define the top-level target, the main firmware.
 all: $(BUILD)/firmware.bin
+
+testsrc:
+	echo "$(SRC_C)"
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"

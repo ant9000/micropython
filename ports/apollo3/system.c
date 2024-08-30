@@ -51,7 +51,7 @@ extern void am_clkgen_isr(void)       __attribute ((weak, alias ("am_default_isr
 
 extern void am_default_isr(void)      __attribute ((weak));
 
-static void cpu_init(void);
+extern void cpu_init(void);
 
 //*****************************************************************************
 //
@@ -311,9 +311,4 @@ am_default_isr(void)
     while(1)
     {
     }
-}
-
-// Set up the MCU.
-static void cpu_init(void) {
-    // TODO
 }
