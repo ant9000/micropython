@@ -27,6 +27,8 @@ INC += -Iambiq/boards/apollo3_evb/bsp
 INC += -Iambiq/CMSIS/AmbiqMicro/Include
 INC += -Iambiq/CMSIS/ARM/Include
 
+INC += -I../../shared/readline
+
 # Set CFLAGS.
 CFLAGS += $(DEF) $(INC) -Wall -std=c99 -nostdlib
 CFLAGS += -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float
@@ -49,6 +51,7 @@ SRC_C = \
 	system.c \
     cpu.c \
 	uart_core.c \
+	help.c \
 	shared/libc/printf.c \
 	shared/readline/readline.c \
 	shared/runtime/pyexec.c \

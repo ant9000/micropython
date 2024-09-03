@@ -9,6 +9,7 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "shared/runtime/pyexec.h"
+#include "readline.h"
 
 #if MICROPY_ENABLE_COMPILER
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -32,27 +33,42 @@ static char *stack_top;
 static char heap[MICROPY_HEAP_SIZE];
 #endif
 
-int main(int argc, char **argv) {
+void NORETURN main(void) {
     int stack_dummy;
+
+soft_reset:
     stack_top = (char *)&stack_dummy;
 
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
     mp_init();
-    #if MICROPY_REPL_EVENT_DRIVEN
-    pyexec_event_repl_init();
+    readline_init0();
+
+    // more hw initialization here
+
+    // Main script is finished, so now go into REPL mode.
+    // The REPL mode can change, or it can request a soft reset.
+    int ret_code = 0;
+
     for (;;) {
-        int c = mp_hal_stdin_rx_chr();
-        if (pyexec_event_repl_process_char(c)) {
-            break;
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            ret_code = pyexec_friendly_repl();
+            if (ret_code != 0) {
+                break;
+            }
         }
     }
-    #else
-    pyexec_friendly_repl();
-    #endif
+
     mp_deinit();
-    return 0;
+
+    printf("MPY: soft reboot\n");
+
+    goto soft_reset;
 }
 
 #if MICROPY_ENABLE_GC
@@ -63,7 +79,10 @@ void gc_collect(void) {
     gc_collect_start();
     gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
     gc_collect_end();
+#ifndef NDEBUG
+    // Used when debugging is enabled.
     gc_dump_info(&mp_plat_print);
+#endif
 }
 #endif
 
@@ -75,16 +94,14 @@ mp_import_stat_t mp_import_stat(const char *path) {
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
-// Called if an exception is raised outside all C exception-catching handlers.
 void nlr_jump_fail(void *val) {
-    for (;;) {
-    }
+    printf("FATAL: uncaught exception %p\n", val);
+    mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));
 }
 
 #ifndef NDEBUG
-// Used when debugging is enabled.
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
-    for (;;) {
-    }
+    (void)func;
+    printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
 }
 #endif

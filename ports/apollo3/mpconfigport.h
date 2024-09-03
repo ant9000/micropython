@@ -13,6 +13,8 @@
 #define MICROPY_ENABLE_GC                 (1)
 #define MICROPY_HELPER_REPL               (1)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
+#define MICROPY_PY_BUILTINS_HELP          (1)
+#define MICROPY_PY_BUILTINS_HELP_TEXT apollo3_help_text
 
 #define MICROPY_ALLOC_PATH_MAX            (256)
 
@@ -33,7 +35,6 @@ typedef long mp_off_t;
 
 #ifdef __thumb__
 #define MICROPY_MIN_USE_CORTEX_CPU (1)
-#define MICROPY_MIN_USE_STM32_MCU (1)
 #define MICROPY_HEAP_SIZE      (2048) // heap size 2 kilobytes
 #endif
 
