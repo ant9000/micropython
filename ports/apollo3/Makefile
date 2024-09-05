@@ -27,11 +27,9 @@ INC += -Iambiq/boards/apollo3_evb/bsp
 INC += -Iambiq/CMSIS/AmbiqMicro/Include
 INC += -Iambiq/CMSIS/ARM/Include
 
-INC += -I../../shared/readline
-
 # Set CFLAGS.
 CFLAGS += $(DEF) $(INC) -Wall -std=c99 -nostdlib
-CFLAGS += -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float
+CFLAGS += -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CFLAGS += -ffunction-sections -fdata-sections -fomit-frame-pointer
 CSUPEROPT = -Os # save some code space for performance-critical code
 
@@ -52,6 +50,9 @@ SRC_C = \
     cpu.c \
 	uart_core.c \
 	help.c \
+	modpyb.c \
+	modpybled.c \
+	modpybswitch.c \
 	shared/libc/printf.c \
 	shared/readline/readline.c \
 	shared/runtime/pyexec.c \
@@ -59,13 +60,16 @@ SRC_C = \
     shared/libc/string0.c \
     $(wildcard ambiq/mcu/apollo3/hal/*.c) \
     $(wildcard ambiq/boards/apollo3_evb/bsp/*.c) \
-    ambiq/utils/am_util_stdio.c
+    ambiq/utils/am_util_stdio.c \
+    ambiq/devices/am_devices_led.c \
+    ambiq/devices/am_devices_button.c
 
 #   ambiq/CMSIS/AmbiqMicro/Source/
 #   ambiq/utils/
 #   ambiq/devices/
 
-SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C)
 
 # Define the required object files.
 OBJ += $(PY_CORE_O)

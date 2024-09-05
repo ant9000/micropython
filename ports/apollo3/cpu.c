@@ -1,8 +1,16 @@
+#include "mpconfigport.h"
 #include "am_mcu_apollo.h"
 #include "am_bsp.h"
 
+mp_uint_t systick_millis = 0;
+
 void am_uart_isr(void) {
     am_bsp_buffered_uart_service();
+}
+
+void SysTick_Handler(void) {
+    systick_millis++;
+    am_devices_button_array_tick(am_bsp_psButtons, AM_BSP_NUM_BUTTONS);
 }
 
 void cpu_init(void) {
@@ -15,4 +23,12 @@ void cpu_init(void) {
     am_bsp_low_power_init();
     // Initialize the printf interface for UART output.
     am_bsp_buffered_uart_printf_enable();
+
+    // Start Systick.
+    am_hal_systick_int_enable();
+    am_hal_systick_load(AM_HAL_CLKGEN_FREQ_MAX_HZ / 1000);
+    am_hal_systick_start();
+
+    // Enable buttons
+    am_devices_button_array_init(am_bsp_psButtons, AM_BSP_NUM_BUTTONS);
 }

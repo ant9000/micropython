@@ -3,7 +3,7 @@
 // options to control how MicroPython is built
 
 // Use the minimal starting configuration (disables all optional features).
-#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_MINIMUM)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
 
 // You can disable the built-in MicroPython compiler by setting the following
 // config option to 0.  If you do this then you won't get a REPL prompt, but you
@@ -15,6 +15,7 @@
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
 #define MICROPY_PY_BUILTINS_HELP          (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT apollo3_help_text
+#define MICROPY_PY_BUILTINS_HELP_MODULES  (1)
 
 #define MICROPY_ALLOC_PATH_MAX            (256)
 
@@ -27,6 +28,10 @@ typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
+// extra builtin names to add to the global namespace
+#define MICROPY_PORT_BUILTINS \
+    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
@@ -35,7 +40,7 @@ typedef long mp_off_t;
 
 #ifdef __thumb__
 #define MICROPY_MIN_USE_CORTEX_CPU (1)
-#define MICROPY_HEAP_SIZE      (2048) // heap size 2 kilobytes
+#define MICROPY_HEAP_SIZE      (16 * 1024) // heap size 16 kilobytes
 #endif
 
 #define MP_STATE_PORT MP_STATE_VM
