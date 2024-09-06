@@ -1,74 +1,74 @@
 #include <stdint.h>
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // Forward declaration of interrupt handlers.
 //
-//*****************************************************************************
-extern void Reset_Handler(void)       __attribute ((naked));
-extern void NMI_Handler(void)         __attribute ((weak));
-extern void HardFault_Handler(void)   __attribute ((weak));
-extern void MemManage_Handler(void)   __attribute ((weak, alias ("HardFault_Handler")));
-extern void BusFault_Handler(void)    __attribute ((weak, alias ("HardFault_Handler")));
-extern void UsageFault_Handler(void)  __attribute ((weak, alias ("HardFault_Handler")));
-extern void SVC_Handler(void)         __attribute ((weak, alias ("am_default_isr")));
-extern void DebugMon_Handler(void)    __attribute ((weak, alias ("am_default_isr")));
-extern void PendSV_Handler(void)      __attribute ((weak, alias ("am_default_isr")));
-extern void SysTick_Handler(void)     __attribute ((weak, alias ("am_default_isr")));
+// *****************************************************************************
+extern void Reset_Handler(void)       __attribute((naked));
+extern void NMI_Handler(void)         __attribute((weak));
+extern void HardFault_Handler(void)   __attribute((weak));
+extern void MemManage_Handler(void)   __attribute((weak, alias("HardFault_Handler")));
+extern void BusFault_Handler(void)    __attribute((weak, alias("HardFault_Handler")));
+extern void UsageFault_Handler(void)  __attribute((weak, alias("HardFault_Handler")));
+extern void SVC_Handler(void)         __attribute((weak, alias("am_default_isr")));
+extern void DebugMon_Handler(void)    __attribute((weak, alias("am_default_isr")));
+extern void PendSV_Handler(void)      __attribute((weak, alias("am_default_isr")));
+extern void SysTick_Handler(void)     __attribute((weak, alias("am_default_isr")));
 
-extern void am_brownout_isr(void)     __attribute ((weak, alias ("am_default_isr")));
-extern void am_watchdog_isr(void)     __attribute ((weak, alias ("am_default_isr")));
-extern void am_rtc_isr(void)          __attribute ((weak, alias ("am_default_isr")));
-extern void am_vcomp_isr(void)        __attribute ((weak, alias ("am_default_isr")));
-extern void am_ioslave_ios_isr(void)  __attribute ((weak, alias ("am_default_isr")));
-extern void am_ioslave_acc_isr(void)  __attribute ((weak, alias ("am_default_isr")));
-extern void am_iomaster0_isr(void)    __attribute ((weak, alias ("am_default_isr")));
-extern void am_iomaster1_isr(void)    __attribute ((weak, alias ("am_default_isr")));
-extern void am_iomaster2_isr(void)    __attribute ((weak, alias ("am_default_isr")));
-extern void am_iomaster3_isr(void)    __attribute ((weak, alias ("am_default_isr")));
-extern void am_iomaster4_isr(void)    __attribute ((weak, alias ("am_default_isr")));
-extern void am_iomaster5_isr(void)    __attribute ((weak, alias ("am_default_isr")));
-extern void am_ble_isr(void)          __attribute ((weak, alias ("am_default_isr")));
-extern void am_gpio_isr(void)         __attribute ((weak, alias ("am_default_isr")));
-extern void am_ctimer_isr(void)       __attribute ((weak, alias ("am_default_isr")));
-extern void am_uart_isr(void)         __attribute ((weak, alias ("am_default_isr")));
-extern void am_uart1_isr(void)        __attribute ((weak, alias ("am_default_isr")));
-extern void am_scard_isr(void)        __attribute ((weak, alias ("am_default_isr")));
-extern void am_adc_isr(void)          __attribute ((weak, alias ("am_default_isr")));
-extern void am_pdm0_isr(void)         __attribute ((weak, alias ("am_default_isr")));
-extern void am_mspi0_isr(void)        __attribute ((weak, alias ("am_default_isr")));
-extern void am_software0_isr(void)    __attribute ((weak, alias ("am_default_isr")));
-extern void am_stimer_isr(void)       __attribute ((weak, alias ("am_default_isr")));
-extern void am_stimer_cmpr0_isr(void) __attribute ((weak, alias ("am_default_isr")));
-extern void am_stimer_cmpr1_isr(void) __attribute ((weak, alias ("am_default_isr")));
-extern void am_stimer_cmpr2_isr(void) __attribute ((weak, alias ("am_default_isr")));
-extern void am_stimer_cmpr3_isr(void) __attribute ((weak, alias ("am_default_isr")));
-extern void am_stimer_cmpr4_isr(void) __attribute ((weak, alias ("am_default_isr")));
-extern void am_stimer_cmpr5_isr(void) __attribute ((weak, alias ("am_default_isr")));
-extern void am_stimer_cmpr6_isr(void) __attribute ((weak, alias ("am_default_isr")));
-extern void am_stimer_cmpr7_isr(void) __attribute ((weak, alias ("am_default_isr")));
-extern void am_clkgen_isr(void)       __attribute ((weak, alias ("am_default_isr")));
+extern void am_brownout_isr(void)     __attribute((weak, alias("am_default_isr")));
+extern void am_watchdog_isr(void)     __attribute((weak, alias("am_default_isr")));
+extern void am_rtc_isr(void)          __attribute((weak, alias("am_default_isr")));
+extern void am_vcomp_isr(void)        __attribute((weak, alias("am_default_isr")));
+extern void am_ioslave_ios_isr(void)  __attribute((weak, alias("am_default_isr")));
+extern void am_ioslave_acc_isr(void)  __attribute((weak, alias("am_default_isr")));
+extern void am_iomaster0_isr(void)    __attribute((weak, alias("am_default_isr")));
+extern void am_iomaster1_isr(void)    __attribute((weak, alias("am_default_isr")));
+extern void am_iomaster2_isr(void)    __attribute((weak, alias("am_default_isr")));
+extern void am_iomaster3_isr(void)    __attribute((weak, alias("am_default_isr")));
+extern void am_iomaster4_isr(void)    __attribute((weak, alias("am_default_isr")));
+extern void am_iomaster5_isr(void)    __attribute((weak, alias("am_default_isr")));
+extern void am_ble_isr(void)          __attribute((weak, alias("am_default_isr")));
+extern void am_gpio_isr(void)         __attribute((weak, alias("am_default_isr")));
+extern void am_ctimer_isr(void)       __attribute((weak, alias("am_default_isr")));
+extern void am_uart_isr(void)         __attribute((weak, alias("am_default_isr")));
+extern void am_uart1_isr(void)        __attribute((weak, alias("am_default_isr")));
+extern void am_scard_isr(void)        __attribute((weak, alias("am_default_isr")));
+extern void am_adc_isr(void)          __attribute((weak, alias("am_default_isr")));
+extern void am_pdm0_isr(void)         __attribute((weak, alias("am_default_isr")));
+extern void am_mspi0_isr(void)        __attribute((weak, alias("am_default_isr")));
+extern void am_software0_isr(void)    __attribute((weak, alias("am_default_isr")));
+extern void am_stimer_isr(void)       __attribute((weak, alias("am_default_isr")));
+extern void am_stimer_cmpr0_isr(void) __attribute((weak, alias("am_default_isr")));
+extern void am_stimer_cmpr1_isr(void) __attribute((weak, alias("am_default_isr")));
+extern void am_stimer_cmpr2_isr(void) __attribute((weak, alias("am_default_isr")));
+extern void am_stimer_cmpr3_isr(void) __attribute((weak, alias("am_default_isr")));
+extern void am_stimer_cmpr4_isr(void) __attribute((weak, alias("am_default_isr")));
+extern void am_stimer_cmpr5_isr(void) __attribute((weak, alias("am_default_isr")));
+extern void am_stimer_cmpr6_isr(void) __attribute((weak, alias("am_default_isr")));
+extern void am_stimer_cmpr7_isr(void) __attribute((weak, alias("am_default_isr")));
+extern void am_clkgen_isr(void)       __attribute((weak, alias("am_default_isr")));
 
-extern void am_default_isr(void)      __attribute ((weak));
+extern void am_default_isr(void)      __attribute((weak));
 
 extern void cpu_init(void);
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // The entry point for the application.
 //
-//*****************************************************************************
+// *****************************************************************************
 extern int main(void);
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // Reserve space for the system stack.
 //
-//*****************************************************************************
+// *****************************************************************************
 __attribute__ ((section(".stack")))
 static uint32_t g_pui32Stack[1024];
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // The vector table.  Note that the proper constructs must be placed on this to
 // ensure that it ends up at physical address 0x0000.0000.
@@ -77,12 +77,12 @@ static uint32_t g_pui32Stack[1024];
 // am_usagefault_isr does not work if am_fault_isr is defined externally.
 // Therefore, we'll explicitly use am_fault_isr in the table for those vectors.
 //
-//*****************************************************************************
+// *****************************************************************************
 __attribute__ ((section(".isr_vector")))
-void (* const g_am_pfnVectors[])(void) =
+void(*const g_am_pfnVectors[])(void) =
 {
     (void (*)(void))((uint32_t)g_pui32Stack + sizeof(g_pui32Stack)),
-                                            // The initial stack pointer
+    // The initial stack pointer
     Reset_Handler,                          // The reset handler
     NMI_Handler,                            // The NMI handler
     HardFault_Handler,                      // The hard fault handler
@@ -136,19 +136,19 @@ void (* const g_am_pfnVectors[])(void) =
     am_clkgen_isr,                          // 31: CLKGEN
 };
 
-//******************************************************************************
+// ******************************************************************************
 //
 // Place code immediately following vector table.
 //
-//******************************************************************************
-//******************************************************************************
+// ******************************************************************************
+// ******************************************************************************
 //
 // The Patch table.
 //
 // The patch table should pad the vector table size to a total of 64 entries
 // (16 core + 48 periph) such that code begins at offset 0x100.
 //
-//******************************************************************************
+// ******************************************************************************
 __attribute__ ((section(".patch")))
 uint32_t const __Patchable[] =
 {
@@ -170,75 +170,74 @@ uint32_t const __Patchable[] =
     0,                                      // 47
 };
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // The following are constructs created by the linker, indicating where the
 // the "data" and "bss" segments reside in memory.  The initializers for the
 // "data" segment resides immediately following the "text" segment.
 //
-//*****************************************************************************
+// *****************************************************************************
 extern uint32_t _etext;
 extern uint32_t _sdata;
 extern uint32_t _edata;
 extern uint32_t _sbss;
 extern uint32_t _ebss;
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // This is the code that gets called when the processor first starts execution
 // following a reset event.  Only the absolutely necessary set is performed,
 // after which the application supplied entry() routine is called.
 //
-//*****************************************************************************
+// *****************************************************************************
 #if defined(__GNUC_STDC_INLINE__)
 void
-Reset_Handler(void)
-{
+Reset_Handler(void) {
     //
     // Set the vector table pointer.
     //
     __asm("    ldr    r0, =0xE000ED08\n"
-          "    ldr    r1, =g_am_pfnVectors\n"
-          "    str    r1, [r0]");
+        "    ldr    r1, =g_am_pfnVectors\n"
+        "    str    r1, [r0]");
 
     //
     // Set the stack pointer.
     //
     __asm("    ldr    sp, [r1]");
 
-#ifndef NOFPU
+    #ifndef NOFPU
     //
     // Enable the FPU.
     //
     __asm("ldr  r0, =0xE000ED88\n"
-          "ldr  r1,[r0]\n"
-          "orr  r1,#(0xF << 20)\n"
-          "str  r1,[r0]\n"
-          "dsb\n"
-          "isb\n");
-#endif
+        "ldr  r1,[r0]\n"
+        "orr  r1,#(0xF << 20)\n"
+        "str  r1,[r0]\n"
+        "dsb\n"
+        "isb\n");
+    #endif
     //
     // Copy the data segment initializers from flash to SRAM.
     //
     __asm("    ldr     r0, =_init_data\n"
-          "    ldr     r1, =_sdata\n"
-          "    ldr     r2, =_edata\n"
-          "copy_loop:\n"
-          "        ldr   r3, [r0], #4\n"
-          "        str   r3, [r1], #4\n"
-          "        cmp     r1, r2\n"
-          "        blt     copy_loop\n");
+        "    ldr     r1, =_sdata\n"
+        "    ldr     r2, =_edata\n"
+        "copy_loop:\n"
+        "        ldr   r3, [r0], #4\n"
+        "        str   r3, [r1], #4\n"
+        "        cmp     r1, r2\n"
+        "        blt     copy_loop\n");
     //
     // Zero fill the bss segment.
     //
     __asm("    ldr     r0, =_sbss\n"
-          "    ldr     r1, =_ebss\n"
-          "    mov     r2, #0\n"
-          "zero_loop:\n"
-          "        cmp     r0, r1\n"
-          "        it      lt\n"
-          "        strlt   r2, [r0], #4\n"
-          "        blt     zero_loop");
+        "    ldr     r1, =_ebss\n"
+        "    mov     r2, #0\n"
+        "zero_loop:\n"
+        "        cmp     r0, r1\n"
+        "        it      lt\n"
+        "        strlt   r2, [r0], #4\n"
+        "        blt     zero_loop");
 
     //
     // Initialize the CPU and peripherals
@@ -259,56 +258,50 @@ Reset_Handler(void)
 #error GNU STDC inline not supported.
 #endif
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // This is the code that gets called when the processor receives a NMI.  This
 // simply enters an infinite loop, preserving the system state for examination
 // by a debugger.
 //
-//*****************************************************************************
+// *****************************************************************************
 void
-NMI_Handler(void)
-{
+NMI_Handler(void) {
     //
     // Go into an infinite loop.
     //
-    while(1)
-    {
+    while (1) {
     }
 }
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // This is the code that gets called when the processor receives a fault
 // interrupt.  This simply enters an infinite loop, preserving the system state
 // for examination by a debugger.
 //
-//*****************************************************************************
+// *****************************************************************************
 void
-HardFault_Handler(void)
-{
+HardFault_Handler(void) {
     //
     // Go into an infinite loop.
     //
-    while(1)
-    {
+    while (1) {
     }
 }
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // This is the code that gets called when the processor receives an unexpected
 // interrupt.  This simply enters an infinite loop, preserving the system state
 // for examination by a debugger.
 //
-//*****************************************************************************
+// *****************************************************************************
 void
-am_default_isr(void)
-{
+am_default_isr(void) {
     //
     // Go into an infinite loop.
     //
-    while(1)
-    {
+    while (1) {
     }
 }
