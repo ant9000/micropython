@@ -61,6 +61,7 @@ SRC_C = \
     $(wildcard ambiq/mcu/apollo3/hal/*.c) \
     $(wildcard ambiq/boards/apollo3_evb/bsp/*.c) \
     ambiq/utils/am_util_stdio.c \
+    ambiq/utils/am_util_delay.c \
     ambiq/devices/am_devices_led.c \
     ambiq/devices/am_devices_button.c
 
