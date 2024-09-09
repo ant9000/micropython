@@ -10,6 +10,7 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 # Include py core make definitions.
 include $(TOP)/py/py.mk
 
+JLINK ?= JLinkExe
 # Define toolchain and other tools.
 CROSS_COMPILE ?= arm-none-eabi-
 
@@ -76,6 +77,13 @@ SRC_QSTR += $(SRC_C)
 OBJ += $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
+define RUN_JLINK
+    $(ECHO) "Writing $(1) to the board via JLink"
+    $(Q)$(JLINK) -if swd -device AMA3B1KK-KBR -speed 4000 -CommandFile apollo3.jlink
+endef
+
+.PHONY: deploy
+
 # Define the top-level target, the main firmware.
 all: $(BUILD)/firmware.bin
 
@@ -90,6 +98,9 @@ $(BUILD)/firmware.elf: $(OBJ)
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $@
+
+deploy: $(BUILD)/firmware.bin
+	$(call RUN_JLINK,$(word 1,$^))
 
 # Include remaining core make rules.
 include $(TOP)/py/mkrules.mk

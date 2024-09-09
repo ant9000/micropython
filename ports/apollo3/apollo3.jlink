@@ -1,0 +1,4 @@
+loadfile build/firmware.bin, 0x0000c000
+verifybin build/firmware.bin, 0x0000c000
+reset
+quit
