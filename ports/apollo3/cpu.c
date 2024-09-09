@@ -29,6 +29,11 @@ void cpu_init(void) {
     am_hal_systick_load(AM_HAL_CLKGEN_FREQ_MAX_HZ / 1000);
     am_hal_systick_start();
 
+    // Enable the RTC.
+    am_hal_clkgen_control(AM_HAL_CLKGEN_CONTROL_XTAL_START, 0);
+    am_hal_rtc_osc_select(AM_HAL_RTC_OSC_XT);
+    am_hal_rtc_osc_enable();
+
     // Enable buttons
     am_devices_button_array_init(am_bsp_psButtons, AM_BSP_NUM_BUTTONS);
 }

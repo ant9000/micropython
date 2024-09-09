@@ -50,7 +50,7 @@ SRC_C += \
 	main.c \
 	system.c \
     cpu.c \
-	uart_core.c \
+	mphalport.c \
 	help.c \
 	modules/machine/led.c \
 	modules/machine/switch.c \
@@ -59,6 +59,7 @@ SRC_C += \
 	shared/runtime/pyexec.c \
 	shared/runtime/stdout_helpers.c \
     shared/libc/string0.c \
+	shared/timeutils/timeutils.c \
     $(wildcard ambiq/mcu/apollo3/hal/*.c) \
     $(wildcard ambiq/boards/apollo3_evb/bsp/*.c) \
     ambiq/utils/am_util_stdio.c \

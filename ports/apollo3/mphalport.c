@@ -1,6 +1,38 @@
 #include "py/mpconfig.h"
+#include "py/mphal.h"
 #include "am_bsp.h"
 #include "am_util_delay.h"
+
+extern mp_uint_t systick_millis;
+mp_uint_t mp_hal_ticks_ms(void) {
+    return systick_millis;
+}
+
+mp_uint_t mp_hal_ticks_us(void) {
+    // TODO
+    return 0;
+}
+
+mp_uint_t mp_hal_ticks_cpu(void) {
+    // TODO
+    return 0;
+}
+
+void mp_hal_delay_us(mp_uint_t us) {
+    // TODO
+}
+
+void mp_hal_delay_ms(mp_uint_t ms) {
+    // TODO
+}
+
+uint64_t mp_hal_time_ns(void) {
+    // TODO
+    return 0;
+}
+
+void mp_hal_set_interrupt_char(int c) {
+}
 
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {
