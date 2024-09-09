@@ -10,7 +10,6 @@
 #include "py/mperrno.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
-#include "modpyb.h"
 
 #if MICROPY_ENABLE_COMPILER
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {

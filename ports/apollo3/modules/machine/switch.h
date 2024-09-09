@@ -1,0 +1,6 @@
+#ifndef __MICROPY_INCLUDED_APOLLO3_SWITCH_H__
+#define __MICROPY_INCLUDED_APOLLO3_SWITCH_H__
+
+extern const mp_obj_type_t machine_switch_type;
+
+#endif // __MICROPY_INCLUDED_APOLLO3_SWITCH_H__

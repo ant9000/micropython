@@ -2,15 +2,24 @@
 
 #include "py/obj.h"
 #include "py/mphal.h"
-#include "modpyb.h"
+#include "modmachine.h"
+#include "led.h"
+#include "switch.h"
 #include "am_mcu_apollo.h"
 
-static mp_obj_t pyb_millis(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms());
-}
-static MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
+#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
+    { MP_ROM_QSTR(MP_QSTR_info),      MP_ROM_PTR(&machine_info_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_millis),    MP_ROM_PTR(&machine_millis_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_LED),       MP_ROM_PTR(&machine_led_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_Switch),    MP_ROM_PTR(&machine_switch_type) }, \
 
-static mp_obj_t pyb_info(void) {
+
+void machine_init(void) {
+}
+
+// machine.info([dump_alloc_table])
+// Print out lots of information about the board.
+static mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
     uint32_t status;
     am_hal_mcuctrl_device_t device;
     status = am_hal_mcuctrl_info_get(AM_HAL_MCUCTRL_INFO_DEVICEID, &device);
@@ -33,21 +42,13 @@ static mp_obj_t pyb_info(void) {
     }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_0(pyb_info_obj, pyb_info);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
-static const mp_rom_map_elem_t pyb_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pyb) },
-    { MP_ROM_QSTR(MP_QSTR_millis), MP_ROM_PTR(&pyb_millis_obj) },
-    { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&pyb_info_obj) },
-    { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pyb_led_type) },
-    { MP_ROM_QSTR(MP_QSTR_Switch), MP_ROM_PTR(&pyb_switch_type) },
-};
+static mp_obj_t machine_millis(void) {
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms());
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(machine_millis_obj, machine_millis);
 
-static MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);
-
-const mp_obj_module_t pyb_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&pyb_module_globals,
-};
-
-MP_REGISTER_MODULE(MP_QSTR_pyb, pyb_module);
+static void mp_machine_idle(void) {
+    // Do nothing.
+}

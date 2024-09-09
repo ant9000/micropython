@@ -9,6 +9,7 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
 # Include py core make definitions.
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 JLINK ?= JLinkExe
 # Define toolchain and other tools.
@@ -45,15 +46,14 @@ endif
 LDFLAGS += -nostdlib -T apollo3.ld -Map=$@.map --cref --gc-sections --entry=Reset_Handler
 
 # Define the required source files.
-SRC_C = \
+SRC_C += \
 	main.c \
 	system.c \
     cpu.c \
 	uart_core.c \
 	help.c \
-	modpyb.c \
-	modpybled.c \
-	modpybswitch.c \
+	modules/machine/led.c \
+	modules/machine/switch.c \
 	shared/libc/printf.c \
 	shared/readline/readline.c \
 	shared/runtime/pyexec.c \
@@ -74,7 +74,8 @@ SRC_C = \
 SRC_QSTR += $(SRC_C)
 
 # Define the required object files.
-OBJ += $(PY_CORE_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_O))
+OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 define RUN_JLINK
