@@ -103,11 +103,17 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught exception %p\n", val);
     mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));
+    while (1) {
+        ;
+    }
 }
 
 #ifndef NDEBUG
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     (void)func;
     printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
+    while (1) {
+        ;
+    }
 }
 #endif
