@@ -3,9 +3,9 @@
 #include "am_bsp.h"
 #include "am_util_delay.h"
 
-extern mp_uint_t systick_millis;
+extern mp_uint_t systick_ms;
 mp_uint_t mp_hal_ticks_ms(void) {
-    return systick_millis;
+    return systick_ms;
 }
 
 mp_uint_t mp_hal_ticks_us(void) {

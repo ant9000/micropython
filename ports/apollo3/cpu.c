@@ -2,14 +2,16 @@
 #include "am_mcu_apollo.h"
 #include "am_bsp.h"
 
-mp_uint_t systick_millis = 0;
+volatile uint32_t systick_ms = 0;
 
 void am_uart_isr(void) {
     am_bsp_buffered_uart_service();
 }
 
 void SysTick_Handler(void) {
-    systick_millis++;
+    uint32_t next_tick = systick_ms + 1;
+    systick_ms = next_tick;
+
     am_devices_button_array_tick(am_bsp_psButtons, AM_BSP_NUM_BUTTONS);
 }
 
