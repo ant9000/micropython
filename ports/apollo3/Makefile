@@ -22,12 +22,12 @@ DEF += -Dgcc
 INC  = -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
+INC += -I$(TOP)/lib/cmsis/inc
 INC += -Iambiq/mcu/apollo3
 INC += -Iambiq/devices
 INC += -Iambiq/utils
 INC += -Iambiq/boards/apollo3_evb/bsp
 INC += -Iambiq/CMSIS/AmbiqMicro/Include
-INC += -Iambiq/CMSIS/ARM/Include
 
 # Set CFLAGS.
 CFLAGS += $(DEF) $(INC) -Wall -std=c99 -nostdlib
