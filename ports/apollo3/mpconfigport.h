@@ -2,8 +2,7 @@
 
 // options to control how MicroPython is built
 
-// Use the minimal starting configuration (disables all optional features).
-#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
 
 // You can disable the built-in MicroPython compiler by setting the following
 // config option to 0.  If you do this then you won't get a REPL prompt, but you
@@ -16,6 +15,7 @@
 #define MICROPY_PY_BUILTINS_HELP          (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT apollo3_help_text
 #define MICROPY_PY_BUILTINS_HELP_MODULES  (1)
+#define MICROPY_STACK_CHECK               (0)
 
 #define MICROPY_PY_TIME                   (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS      (1)
@@ -36,6 +36,7 @@ typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+#define MP_NEED_LOG2                (1)
 
 // extra builtin names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

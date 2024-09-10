@@ -38,6 +38,15 @@ uint64_t mp_hal_time_ns(void) {
 void mp_hal_set_interrupt_char(int c) {
 }
 
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    #if MICROPY_PY_OS_DUPTERM
+    ret |= mp_os_dupterm_poll(poll_flags);
+    #endif
+    return ret;
+}
+
+
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {
     uint8_t ch;

@@ -47,19 +47,20 @@ LDFLAGS += -nostdlib -T apollo3.ld -Map=$@.map --cref --gc-sections --entry=Rese
 
 # Define the required source files.
 SRC_C += \
-	main.c \
-	system.c \
+    main.c \
+    system.c \
     cpu.c \
-	mphalport.c \
-	help.c \
-	modules/machine/led.c \
-	modules/machine/switch.c \
-	shared/libc/printf.c \
-	shared/readline/readline.c \
-	shared/runtime/pyexec.c \
-	shared/runtime/stdout_helpers.c \
+    mphalport.c \
+    help.c \
+    modules/machine/led.c \
+    modules/machine/switch.c \
+    shared/libc/printf.c \
+    shared/readline/readline.c \
+    shared/runtime/pyexec.c \
+    shared/runtime/stdout_helpers.c \
     shared/libc/string0.c \
-	shared/timeutils/timeutils.c \
+    shared/timeutils/timeutils.c \
+    shared/runtime/sys_stdio_mphal.c \
     $(wildcard ambiq/mcu/apollo3/hal/*.c) \
     $(wildcard ambiq/boards/apollo3_evb/bsp/*.c) \
     ambiq/utils/am_util_stdio.c \
