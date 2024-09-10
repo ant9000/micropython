@@ -35,6 +35,8 @@ typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
+#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+
 // extra builtin names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },

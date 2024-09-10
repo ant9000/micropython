@@ -71,11 +71,19 @@ SRC_C += \
 #   ambiq/utils/
 #   ambiq/devices/
 
+# Disable warnings for Ambiq SDK files: am_hal_ble
+$(BUILD)/ambiq/mcu/apollo3/hal/am_hal_ble.o: CFLAGS += -Wno-maybe-uninitialized
+
+# Math library:
+SRC_C += $(SRC_LIB_LIBM_C)
+SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)
+
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C)
 
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+
 # Define the required object files.
-OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
@@ -94,7 +102,7 @@ testsrc:
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
