@@ -1,5 +1,6 @@
 #include "py/mpconfig.h"
 #include "py/mphal.h"
+#include "py/runtime.h"
 #include "am_bsp.h"
 #include "am_util_delay.h"
 
@@ -23,7 +24,10 @@ void mp_hal_delay_us(mp_uint_t us) {
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    // TODO
+    uint32_t t0 = systick_ms;
+    while (systick_ms - t0 < ms) {
+        mp_event_handle_nowait();
+    }
 }
 
 uint64_t mp_hal_time_ns(void) {
