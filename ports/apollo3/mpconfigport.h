@@ -15,7 +15,6 @@
 #define MICROPY_PY_BUILTINS_HELP          (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT apollo3_help_text
 #define MICROPY_PY_BUILTINS_HELP_MODULES  (1)
-#define MICROPY_STACK_CHECK               (0)
 
 #define MICROPY_PY_TIME                   (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS      (1)
@@ -48,9 +47,8 @@ typedef long mp_off_t;
 #define MICROPY_HW_BOARD_NAME "apollo3_evb"
 #define MICROPY_HW_MCU_NAME "apollo3"
 
-#ifdef __thumb__
 #define MICROPY_MIN_USE_CORTEX_CPU (1)
+#define MICROPY_STACK_SIZE     (32 * 1024) // stack size 32 kilobytes
 #define MICROPY_HEAP_SIZE      (16 * 1024) // heap size 16 kilobytes
-#endif
 
 #define MP_STATE_PORT MP_STATE_VM

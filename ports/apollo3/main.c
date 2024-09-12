@@ -5,6 +5,7 @@
 #include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
+#include "py/stackctrl.h"
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
@@ -28,16 +29,16 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 }
 #endif
 
-static char *stack_top;
-#if MICROPY_ENABLE_GC
+extern uint32_t _estack;
 static char heap[MICROPY_HEAP_SIZE];
-#endif
 
 int main(int argc, char **argv) {
-    int stack_dummy;
-
 soft_reset:
-    stack_top = (char *)&stack_dummy;
+    mp_stack_set_top(&_estack);
+
+    // Stack limit should be less than real stack size, so we have a chance
+    // to recover from limit hit.  (Limit is measured in bytes.)
+    mp_stack_set_limit((char *)&_estack - ((char *)heap + MICROPY_HEAP_SIZE) - 400);
 
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
@@ -70,21 +71,6 @@ soft_reset:
 
     goto soft_reset;
 }
-
-#if MICROPY_ENABLE_GC
-void gc_collect(void) {
-    // WARNING: This gc_collect implementation doesn't try to get root
-    // pointers from CPU registers, and thus may function incorrectly.
-    void *dummy;
-    gc_collect_start();
-    gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
-    gc_collect_end();
-    #ifndef NDEBUG
-    // Used when debugging is enabled.
-    gc_dump_info(&mp_plat_print);
-    #endif
-}
-#endif
 
 mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
     mp_raise_OSError(MP_ENOENT);

@@ -50,6 +50,7 @@ SRC_C += \
     main.c \
     system.c \
     cpu.c \
+    gccollect.c \
     mphalport.c \
     help.c \
     modules/machine/led.c \
