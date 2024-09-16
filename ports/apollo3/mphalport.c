@@ -1,26 +1,51 @@
 #include "py/mpconfig.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "shared/timeutils/timeutils.h"
+#include "mphalport.h"
 #include "am_bsp.h"
 #include "am_util_delay.h"
+#include "irq.h"
 
-extern mp_uint_t systick_ms;
+extern volatile uint32_t systick_ms;
 mp_uint_t mp_hal_ticks_ms(void) {
     return systick_ms;
 }
 
 mp_uint_t mp_hal_ticks_us(void) {
-    // TODO
-    return 0;
+    mp_uint_t irq_state = disable_irq();
+    uint32_t counter = SysTick->VAL;
+    uint32_t milliseconds = mp_hal_ticks_ms();
+    uint32_t status = SysTick->CTRL;
+    enable_irq(irq_state);
+
+    // It's still possible for the countflag bit to get set if the counter was
+    // reloaded between reading VAL and reading CTRL. With interrupts  disabled
+    // it definitely takes less than 50 HCLK cycles between reading VAL and
+    // reading CTRL, so the test (counter > 50) is to cover the case where VAL
+    // is +ve and very close to zero, and the COUNTFLAG bit is also set.
+    if ((status & SysTick_CTRL_COUNTFLAG_Msk) && counter > 50) {
+        // This means that the HW reloaded VAL between the time we read VAL and the
+        // time we read CTRL, which implies that there is an interrupt pending
+        // to increment the tick counter.
+        milliseconds++;
+    }
+    uint32_t load = SysTick->LOAD;
+    counter = load - counter; // Convert from decrementing to incrementing
+
+    // ((load + 1) / 1000) is the number of counts per microsecond.
+    //
+    // counter / ((load + 1) / 1000) scales from the systick clock to microseconds
+    // and is the same thing as (counter * 1000) / (load + 1)
+    return milliseconds * 1000 + (counter * 1000) / (load + 1);
 }
 
 mp_uint_t mp_hal_ticks_cpu(void) {
-    // TODO
-    return 0;
+    return am_hal_systick_count();
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
-    // TODO
+    am_hal_systick_delay_us(us);
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
@@ -31,8 +56,12 @@ void mp_hal_delay_ms(mp_uint_t ms) {
 }
 
 uint64_t mp_hal_time_ns(void) {
-    // TODO
-    return 0;
+    uint64_t ns;
+    am_hal_rtc_time_t time;
+    am_hal_rtc_time_get(&time);
+    ns = timeutils_seconds_since_epoch(2000 + time.ui32Year, time.ui32Month, time.ui32DayOfMonth, time.ui32Hour, time.ui32Minute, time.ui32Second);
+    ns *= 1000000000ULL;
+    return ns;
 }
 
 void mp_hal_set_interrupt_char(int c) {
