@@ -1,0 +1,18 @@
+/* delete the already defined storage partition and create a new and bigger one */
+/delete-node/ &storage_partition;
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+
+        /* Set 128KB of storage at the end of the 976KB of flash */
+        storage_partition: partition@d0000 {
+            label = "storage";
+            reg = <0x000d0000 0x20000>;
+        };
+
+	};
+};
