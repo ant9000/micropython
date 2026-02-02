@@ -26,7 +26,7 @@
 
 #include "py/mpconfig.h"
 
-#if MICROPY_HW_ENABLE_USBDEV
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 #include "mp_usbd.h"
 #include "py/mperrno.h"

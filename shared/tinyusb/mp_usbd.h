@@ -65,8 +65,25 @@
 #include "class/cdc/cdc_device.h"
 #endif
 
+// Per-class runtime enable/disable state
+typedef struct {
+    bool cdc_enabled;
+    bool msc_enabled;
+    bool ncm_enabled;
+} mp_usbd_class_state_t;
+
+// Global class enable state
+extern mp_usbd_class_state_t mp_usbd_class_state;
+
+// Functions to control USB classes via bitfield flags
+void mp_usbd_update_class_state(uint8_t flags);
+void mp_usbd_init_class_state(void);
+
 // Initialise TinyUSB device.
 static inline void mp_usbd_init_tud(void) {
+    // Initialize class state before TinyUSB init
+    mp_usbd_init_class_state();
+
     tusb_init();
     #if MICROPY_HW_USB_CDC
     tud_cdc_configure_t cfg = {
@@ -92,43 +109,6 @@ extern void mp_usbd_port_get_serial_number(char *buf);
 // is a helper function for this. out_str must be long enough to hold a string of total
 // length (2 * bytes_len + 1) (including NUL terminator).
 void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
-
-// Per-class runtime enable/disable state
-typedef struct {
-    bool cdc_enabled;
-    bool msc_enabled;
-    bool ncm_enabled;
-} mp_usbd_class_state_t;
-
-// Global class enable state
-extern mp_usbd_class_state_t mp_usbd_class_state;
-
-// Functions to control USB classes via bitfield flags
-void mp_usbd_update_class_state(uint8_t flags);
-void mp_usbd_init_class_state(void);
-
-// Initialise TinyUSB device.
-static inline void mp_usbd_init_tud(void) {
-    // Initialize class state before TinyUSB init
-    mp_usbd_init_class_state();
-
-    tusb_init();
-    #if MICROPY_HW_USB_CDC
-    tud_cdc_configure_fifo_t cfg = { .rx_persistent = 0,
-                                     .tx_persistent = 1,
-
-                                     // This config flag is unreleased in TinyUSB >v0.18.0
-                                     // but included in Espressif's TinyUSB component since v0.18.0~3
-                                     //
-                                     // Versioning issue reported as
-                                     // https://github.com/espressif/esp-usb/issues/236
-                                     #if TUSB_VERSION_NUMBER > 1800 || defined(ESP_PLATFORM)
-                                     .tx_overwritabe_if_not_connected = 1,
-                                     #endif
-    };
-    tud_cdc_configure_fifo(&cfg);
-    #endif
-}
 
 // Allow runtime override of VID/PID defaults
 #ifndef MICROPY_HW_USB_RUNTIME_VID
@@ -161,23 +141,9 @@ extern const uint8_t mp_usbd_builtin_desc_cfg[MP_USBD_BUILTIN_DESC_CFG_LEN];
 
 void mp_usbd_task_callback(mp_sched_node_t *node);
 
-#if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
-
-static inline void mp_usbd_init(void) {
-    // Without runtime USB support, this can be a thin wrapper wrapper around tusb_init()
-    // which is called in the below helper function.
-    MICROPY_HW_TINYUSB_LL_INIT();
-    mp_usbd_init_tud();
-}
-
-static inline void mp_usbd_deinit(void) {
-    // Called in soft reset path. No-op if no runtime USB devices require cleanup.
-}
-
-#else
-// Runtime USB Device support requires more complex init/deinit
-void mp_usbd_init(void);
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 void mp_usbd_deinit(void);
+void mp_usbd_init(void);
 
 const char *mp_usbd_runtime_string_cb(uint8_t index);
 
@@ -252,8 +218,6 @@ extern const mp_obj_type_t mp_type_usb_device_builtin_none;
 static inline bool mp_usb_device_builtin_enabled(const mp_obj_usb_device_t *usbd) {
     return usbd->builtin_driver != MP_OBJ_FROM_PTR(&mp_type_usb_device_builtin_none);
 }
-
-#endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 #endif // MICROPY_HW_ENABLE_USBDEV
 

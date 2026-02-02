@@ -280,6 +280,10 @@
 #define MICROPY_HW_USB_CDC                  (MICROPY_HW_ENABLE_USBDEV)
 #endif
 
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC                      (0)
+#endif
+
 // Enable stdio over USB Serial/JTAG peripheral
 // (SOC_USB_OTG_PERIPH_NUM is only 2 on the ESP32-P4, which supports both native USB & Serial/JTAG simultaneously)
 #ifndef MICROPY_HW_ESP_USB_SERIAL_JTAG
