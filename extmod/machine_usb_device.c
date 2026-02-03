@@ -43,6 +43,10 @@
 #include "device/usbd_pvt.h"
 #endif
 
+#ifndef UNUSED
+#define UNUSED(x) (void)(x)
+#endif
+
 #define HAS_BUILTIN_DRIVERS (MICROPY_HW_USB_CDC || MICROPY_HW_USB_MSC || MICROPY_HW_USB_NCM)
 
 // USB class flags are defined in mp_usbd.h
@@ -328,6 +332,9 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(usb_device_config_obj, 1, usb_device_config);
 #endif // MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
 
 // Per-class control methods
+MP_WEAK void mp_usbd_enable_class_cdc(bool enable) {
+    UNUSED(enable);
+}
 static mp_obj_t usb_device_enable_cdc(size_t n_args, const mp_obj_t *args) {
     mp_obj_usb_device_t *self = MP_OBJ_TO_PTR(args[0]);
 
@@ -345,6 +352,9 @@ static mp_obj_t usb_device_enable_cdc(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_enable_cdc_obj, 1, 2, usb_device_enable_cdc);
 
+MP_WEAK void mp_usbd_enable_class_msc(bool enable) {
+    UNUSED(enable);
+}
 static mp_obj_t usb_device_enable_msc(size_t n_args, const mp_obj_t *args) {
     mp_obj_usb_device_t *self = MP_OBJ_TO_PTR(args[0]);
 
@@ -362,6 +372,9 @@ static mp_obj_t usb_device_enable_msc(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_device_enable_msc_obj, 1, 2, usb_device_enable_msc);
 
+MP_WEAK void mp_usbd_enable_class_ncm(bool enable) {
+    UNUSED(enable);
+}
 static mp_obj_t usb_device_enable_ncm(size_t n_args, const mp_obj_t *args) {
     mp_obj_usb_device_t *self = MP_OBJ_TO_PTR(args[0]);
 
