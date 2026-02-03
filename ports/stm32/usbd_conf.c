@@ -196,9 +196,6 @@ static void mp_usbd_ll_init_fs(void) {
         #endif
         #endif
         #endif
-
-        #if MICROPY_HW_STM_USB_STACK
-        return;
         #endif
     }
 }
@@ -294,6 +291,8 @@ static void mp_usbd_ll_init_hs(void) {
 
         LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_OTG1);
         LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_OTGPHY1);
+        LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_OTG1);
+        LL_AHB5_GRP1_EnableClockLowPower(LL_AHB5_GRP1_PERIPH_OTGPHY1);
 
         // Select 24MHz clock.
         MODIFY_REG(USB1_HS_PHYC->USBPHYC_CR, USB_USBPHYC_CR_FSEL, 2 << USB_USBPHYC_CR_FSEL_Pos);
