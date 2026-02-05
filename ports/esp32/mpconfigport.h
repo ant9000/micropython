@@ -416,3 +416,15 @@ void boardctrl_startup(void);
 #ifndef MICROPY_ESP_IDF_ENTRY
 #define MICROPY_ESP_IDF_ENTRY app_main
 #endif
+
+#if MICROPY_HW_NETWORK_USBNET
+#define MICROPY_PY_LWIP             (1)
+#define LWIP_TESTMODE               (1)
+#define LWIP_MDNS_RESPONDER         (0)
+#ifndef MICROPY_BOARD_NETWORK_INTERFACES
+#define MICROPY_BOARD_NETWORK_INTERFACES
+#endif
+#define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_BOARD_NETWORK_INTERFACES \
+
+#endif

@@ -155,4 +155,19 @@ static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
 
 spi_host_device_t machine_hw_spi_get_host(mp_obj_t in);
 
+#ifdef MICROPY_PY_LWIP
+// TODO: Prevent the "lwIP task" from running when unsafe to do so.
+#define MICROPY_PY_LWIP_ENTER   (void)0;
+#define MICROPY_PY_LWIP_REENTER (void)0;
+#define MICROPY_PY_LWIP_EXIT    (void)0;
+#endif
+
+#if MICROPY_HW_NETWORK_USBNET
+enum {
+    MP_HAL_MAC_ETH0,
+};
+
+void mp_hal_get_mac(int idx, uint8_t buf[6]);
+#endif
+
 #endif // INCLUDED_MPHALPORT_H

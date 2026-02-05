@@ -52,6 +52,10 @@
 #error "MICROPY_PY_STRING_TX_GIL_THRESHOLD must be positive"
 #endif
 
+#if MICROPY_HW_NETWORK_USBNET
+#include "esp_mac.h"
+#endif
+
 TaskHandle_t mp_main_task_handle;
 
 static uint8_t stdin_ringbuf_array[260];
@@ -266,3 +270,13 @@ void mp_hal_wake_main_task_from_isr(void) {
         portYIELD_FROM_ISR();
     }
 }
+
+#if MICROPY_HW_NETWORK_USBNET
+// A board can override this if needed
+MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    uint8_t chip_id[8];
+    esp_efuse_mac_get_default(chip_id);
+    memcpy(buf, chip_id, 6);
+    buf[0] = 0x02; // LAA
+}
+#endif

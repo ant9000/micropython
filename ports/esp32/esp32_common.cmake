@@ -56,6 +56,7 @@ list(APPEND MICROPY_QSTRDEFS_PORT
 
 list(APPEND MICROPY_SOURCE_SHARED
     ${MICROPY_DIR}/shared/readline/readline.c
+    ${MICROPY_DIR}/shared/netutils/dhcpserver.c
     ${MICROPY_DIR}/shared/netutils/netutils.c
     ${MICROPY_DIR}/shared/timeutils/timeutils.c
     ${MICROPY_DIR}/shared/runtime/interrupt_char.c

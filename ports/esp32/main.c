@@ -65,6 +65,11 @@
 #include "modmachine.h"
 #include "modnetwork.h"
 
+#if MICROPY_PY_LWIP
+#include "lwip/init.h"
+#include "lwip/apps/mdns.h"
+#endif
+
 #if MICROPY_BLUETOOTH_NIMBLE
 #include "extmod/modbluetooth.h"
 #endif
@@ -116,6 +121,16 @@ void mp_task(void *pvParameter) {
     uart_stdout_init();
     #endif
     machine_init();
+
+    #if MICROPY_PY_LWIP
+    // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
+    // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
+    // So for now we only init the lwIP stack once on power-up.
+    lwip_init();
+    #if LWIP_MDNS_RESPONDER
+    mdns_resp_init();
+    #endif
+    #endif
 
     #if MICROPY_SSL_MBEDTLS
     // Configure time function, for mbedtls certificate time validation.
