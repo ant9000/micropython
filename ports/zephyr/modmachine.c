@@ -31,8 +31,15 @@
 
 #include <stdio.h>
 #include <zephyr/sys/reboot.h>
+#include <zephyr/pm/pm.h>
+#include <zephyr/pm/device.h>
+#include <zephyr/sys/poweroff.h>
+#include <zephyr/kernel.h>
 
 #include "modmachine.h"
+
+// Semaphore for waking from lightsleep on GPIO interrupts
+K_SEM_DEFINE(lightsleep_wake_sem, 0, 1);
 
 #ifdef CONFIG_REBOOT
 #define MICROPY_PY_MACHINE_RESET_ENTRY { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
@@ -40,16 +47,11 @@
 #define MICROPY_PY_MACHINE_RESET_ENTRY
 #endif
 
-#ifndef MICROPY_PY_MACHINE_BOARD_EXTRA_GLOBALS
-#define MICROPY_PY_MACHINE_BOARD_EXTRA_GLOBALS
-#endif
-
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     MICROPY_PY_MACHINE_RESET_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) }, \
-    MICROPY_PY_MACHINE_BOARD_EXTRA_GLOBALS \
 
 static mp_obj_t machine_reset(void) {
     sys_reboot(SYS_REBOOT_COLD);
@@ -68,7 +70,64 @@ static void mp_machine_idle(void) {
     k_yield();
 }
 
-// A board can provide additional machine-module implementation in this file.
-#ifdef MICROPY_PY_MACHINE_BOARD_INCLUDEFILE
-#include MICROPY_PY_MACHINE_BOARD_INCLUDEFILE
+#ifdef CONFIG_PM_DEVICE
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    // Check if no argument is provided
+    if (n_args == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("value must be provided"));
+    }
+    mp_int_t milliseconds = mp_obj_get_int(args[0]);
+
+    // Get the UART device
+    const struct device *console = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+    // Clear busy bit from UART
+    pm_device_busy_clear(console);
+    // Set UART device to low power state
+    pm_device_action_run(console, PM_DEVICE_ACTION_SUSPEND);
+
+    // Reset the semaphore before sleeping to ensure clean state
+    k_sem_reset(&lightsleep_wake_sem);
+
+    // Use semaphore with timeout instead of k_sleep to allow GPIO wake
+    k_sem_take(&lightsleep_wake_sem, K_MSEC(milliseconds));
+
+    // Set UART device back to active state
+    pm_device_action_run(console, PM_DEVICE_ACTION_RESUME);
+    // Mark UART as busy to prevent it from being suspended
+    pm_device_busy_set(console);
+}
+#else
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
+}
 #endif
+
+#if defined(CONFIG_PM_DEVICE) && defined(CONFIG_SYS_POWER_OFF)
+static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    // Check if argument is provided
+    if (n_args > 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timeout not supported"));
+    }
+    // Get the UART device
+    const struct device *console = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+    // Set UART device to low power state
+    pm_device_action_run(console, PM_DEVICE_ACTION_SUSPEND);
+    sys_poweroff();
+}
+#else
+static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
+}
+#endif
+
+static mp_obj_t mp_machine_get_freq(void) {
+    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
+}
+
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
+}
+
+static mp_obj_t mp_machine_unique_id(void) {
+    mp_raise_ValueError(MP_ERROR_TEXT("not implemented"));
+}
