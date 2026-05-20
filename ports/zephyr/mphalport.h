@@ -1,6 +1,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/random/random.h>
+#include <zephyr/cache.h>
 #include "shared/runtime/interrupt_char.h"
 
 #define MICROPY_BEGIN_ATOMIC_SECTION irq_lock
@@ -10,13 +11,13 @@
 // Do not use this macro directly, include py/runtime.h and
 // call mp_event_wait_indefinite() or mp_event_wait_ms(timeout).
 #define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
-    do {                                 \
-        if ((TIMEOUT_MS) < 0) { \
-            mp_hal_wait_event(true, NULL, (uint32_t)-1); \
-        } else { \
-            mp_hal_wait_event(true, NULL, (TIMEOUT_MS)); \
-        } \
-    } while (0)
+        do {                                 \
+            if ((TIMEOUT_MS) < 0) { \
+                mp_hal_wait_event(true, NULL, (uint32_t)-1); \
+            } else { \
+                mp_hal_wait_event(true, NULL, (TIMEOUT_MS)); \
+            } \
+        } while (0)
 
 void mp_hal_init(void);
 void mp_hal_wait_event(bool exit_on_event, struct k_sem *sem, uint32_t timeout_ms);
@@ -94,6 +95,14 @@ static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
 static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
     (void)gpio_pin_set_raw(pin->port, pin->pin, 1);
 }
+
+// Provide cache clean when possible.
+#ifdef CONFIG_CACHE_MANAGEMENT
+#define MP_HAL_CLEAN_DCACHE(fun_data, fun_len) \
+        if (sys_cache_data_flush_and_invd_range((void *)fun_data, fun_len) != 0) {   \
+            sys_cache_data_flush_and_invd_all();                                     \
+        }
+#endif
 
 #if CONFIG_HARDWARE_DEVICE_CS_GENERATOR || CONFIG_PSA_CSPRNG_GENERATOR
 static inline void mp_hal_get_random(size_t n, uint8_t *buf) {
