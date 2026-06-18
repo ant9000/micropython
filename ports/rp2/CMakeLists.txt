@@ -532,30 +532,49 @@ target_compile_options(${MICROPY_TARGET} PRIVATE
     -Wall
     -Werror
     -g  # always include debug information in the ELF
+
+    # pico-sdk already passes --specs=nosys.specs to stub out syscall handlers,
+    # passing nano.specs as well means that newlib-nano libc functions will be used
+    # (note this is mostly a linker option, but should be passed to the compiler as
+    # well to add the newlib-nano header to the search path. Currently this happens
+    # inconsistently as pico-sdk files aren't built with this option.)
+    --specs=nano.specs
 )
 
 target_link_options(${MICROPY_TARGET} PRIVATE
     -Wl,--defsym=__micropy_c_heap_size__=${MICROPY_C_HEAP_SIZE}
     -Wl,--wrap=runtime_init_clocks
+    -Wl,--print-memory-usage
+    -Wl,--cref
+    # see note about nano.specs, above
+    --specs=nano.specs
 )
 
 if(DEFINED PICO_FLASH_SIZE_BYTES)
     target_link_options(${MICROPY_TARGET} PRIVATE
         -Wl,--defsym=__micropy_flash_size__=${PICO_FLASH_SIZE_BYTES}
     )
-elseif(PICO_RP2040)
-    target_link_options(${MICROPY_TARGET} PRIVATE
-        -Wl,--defsym=__micropy_flash_size__=2048k # Default to 2MB
-    )
-elseif(PICO_RP2350)
-    target_link_options(${MICROPY_TARGET} PRIVATE
-        -Wl,--defsym=__micropy_flash_size__=4096k # Default to 4MB
-    )
+else(PICO_RP2040)
+    message(FATAL_ERROR "PICO_FLASH_SIZE_BYTES must be defined")
 endif()
 
 if(PICO_RP2350)
     target_link_options(${MICROPY_TARGET} PRIVATE
         -Wl,--defsym=__micropy_extra_stack__=4096
+    )
+endif()
+
+# MICROPY_HW_FLASH_STORAGE_BYTES is set via board mpconfigboard.cmake or
+# MICROPY_HW_FLASH_STORAGE_BYTES variable.
+# Expose it as a linker symbol so the linker script can assert the firmware
+# doesn't overlap the filesystem and as a compile definition so
+# rp2_flash.c uses the correct storage base address.
+if(DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
+    target_link_options(${MICROPY_TARGET} PRIVATE
+        -Wl,--defsym=__micropy_flash_storage_bytes__=${MICROPY_HW_FLASH_STORAGE_BYTES}
+    )
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_HW_FLASH_STORAGE_BYTES=${MICROPY_HW_FLASH_STORAGE_BYTES}
     )
 endif()
 
@@ -635,13 +654,6 @@ endif()
 
 pico_add_extra_outputs(${MICROPY_TARGET})
 
-pico_find_compiler_with_triples(PICO_COMPILER_SIZE "${PICO_GCC_TRIPLE}" size)
-
-add_custom_command(TARGET ${MICROPY_TARGET}
-    POST_BUILD
-    COMMAND ${PICO_COMPILER_SIZE} --format=berkeley ${PROJECT_BINARY_DIR}/${MICROPY_TARGET}.elf
-    VERBATIM
-)
 
 # Collect all the include directories and compile definitions for the pico-sdk components.
 foreach(comp ${PICO_SDK_COMPONENTS})

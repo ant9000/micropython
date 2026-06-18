@@ -42,8 +42,7 @@ function ci_picotool_setup {
 # c code formatting
 
 function ci_c_code_formatting_setup {
-    sudo apt-get update
-    sudo apt-get install uncrustify
+    pip install micropython-uncrustify==1.0.0.post1
     uncrustify --version
 }
 
@@ -185,6 +184,21 @@ function ci_mpy_cross_debug_emitter {
 }
 
 ########################################################################################
+# ports/alif
+
+function ci_alif_setup {
+    ci_gcc_arm_setup
+}
+
+function ci_alif_ae3_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_HP submodules
+    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_HE submodules
+    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_DUAL
+    make ${MAKEOPTS} -C ports/alif BOARD=ALIF_ENSEMBLE MCU_CORE=M55_DUAL USER_C_MODULES=../../examples/usercmodule
+}
+
+########################################################################################
 # ports/cc3200
 
 function ci_cc3200_setup {
@@ -291,25 +305,6 @@ function ci_esp8266_build {
 
     # Test building native .mpy with xtensa architecture.
     ci_native_mpy_modules_build xtensa
-}
-
-########################################################################################
-# ports/webassembly
-
-function ci_webassembly_setup {
-    npm install terser
-    git clone https://github.com/emscripten-core/emsdk.git
-    (cd emsdk && ./emsdk install latest && ./emsdk activate latest)
-}
-
-function ci_webassembly_build {
-    source emsdk/emsdk_env.sh
-    make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript submodules
-    make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript
-}
-
-function ci_webassembly_run_tests {
-    make -C ports/webassembly VARIANT=pyscript test_min
 }
 
 ########################################################################################
@@ -608,6 +603,12 @@ CI_UNIX_OPTS_QEMU_ARM=(
 
 CI_UNIX_OPTS_QEMU_RISCV64=(
     CROSS_COMPILE=riscv64-linux-gnu-
+    VARIANT=coverage
+    MICROPY_STANDALONE=1
+)
+
+CI_UNIX_OPTS_QEMU_LOONG64=(
+    CROSS_COMPILE=loongarch64-linux-gnu-
     VARIANT=coverage
     MICROPY_STANDALONE=1
 )
@@ -972,6 +973,36 @@ function ci_unix_qemu_riscv64_run_tests {
     popd
 }
 
+function ci_unix_qemu_loong64_setup {
+    sudo apt-get update
+    sudo apt-get install gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc6-loong64-cross libltdl-dev
+    sudo apt-get install qemu-user-static
+    qemu-loongarch64-static --version
+    sudo mkdir -p /usr/gnemul
+    sudo ln -s /usr/loongarch64-linux-gnu /usr/gnemul/qemu-loongarch64
+    sudo ln -s /usr/bin/loongarch64-linux-gnu-gcc-14 /usr/bin/loongarch64-linux-gnu-gcc
+    sudo ln -s /usr/bin/loongarch64-linux-gnu-g++-14 /usr/bin/loongarch64-linux-gnu-g++
+}
+
+function ci_unix_qemu_loong64_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_LOONG64[@]}"
+    ci_unix_build_ffi_lib_helper loongarch64-linux-gnu-gcc
+}
+
+function ci_unix_qemu_loong64_run_tests {
+    # Issues with LOONG64 tests:
+    # - thread/stress_aes.py takes around 90 seconds
+    file ./ports/unix/build-coverage/micropython
+    # Loongarch64 isn't defined in the CI image's binfmt list.
+    cat << 'EOF' > ./ports/unix/build-coverage/micropython-runner
+#!/bin/sh
+MPY_PATH=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
+qemu-loongarch64-static "$MPY_PATH"/micropython $@
+EOF
+    chmod +x ./ports/unix/build-coverage/micropython-runner
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython-runner MICROPY_TEST_TIMEOUT=180 ./run-tests.py)
+}
+
 function ci_unix_repr_b_build {
     ci_unix_build_helper "${CI_UNIX_OPTS_REPR_B[@]}"
     ci_unix_build_ffi_lib_helper gcc -m32
@@ -981,6 +1012,25 @@ function ci_unix_repr_b_run_tests {
     # ci_unix_run_tests_full_no_native_helper is not used due to
     # https://github.com/micropython/micropython/issues/18105
     ci_unix_run_tests_helper "${CI_UNIX_OPTS_REPR_B[@]}"
+}
+
+########################################################################################
+# ports/webassembly
+
+function ci_webassembly_setup {
+    npm install terser
+    git clone https://github.com/emscripten-core/emsdk.git
+    (cd emsdk && ./emsdk install latest && ./emsdk activate latest)
+}
+
+function ci_webassembly_build {
+    source emsdk/emsdk_env.sh
+    make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript submodules
+    make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript
+}
+
+function ci_webassembly_run_tests {
+    make -C ports/webassembly VARIANT=pyscript test_min
 }
 
 ########################################################################################
@@ -1055,19 +1105,7 @@ function ci_zephyr_run_tests {
 }
 
 ########################################################################################
-# ports/alif
-
-function ci_alif_setup {
-    ci_gcc_arm_setup
-}
-
-function ci_alif_ae3_build {
-    make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_HP submodules
-    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_HE submodules
-    make ${MAKEOPTS} -C ports/alif BOARD=OPENMV_AE3 MCU_CORE=M55_DUAL
-    make ${MAKEOPTS} -C ports/alif BOARD=ALIF_ENSEMBLE MCU_CORE=M55_DUAL USER_C_MODULES=../../examples/usercmodule
-}
+# Helpers to run this script as a CLI tool.
 
 function _ci_help {
     # Note: these lines must be indented with tab characters (required by bash <<-EOF)
