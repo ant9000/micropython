@@ -89,11 +89,9 @@ emitter_tests_to_skip = {
     # Remove them from the below when they work.
     "native": (
         # These require raise_varargs.
-        "basics/gen_yield_from_close.py",
         "basics/try_finally_return2.py",
         "basics/try_reraise.py",
         "basics/try_reraise2.py",
-        "misc/features.py",
         # These require checking for unbound local.
         "basics/annotate_var.py",
         "basics/del_deref.py",
@@ -199,16 +197,22 @@ platform_tests_to_skip = {
 
 # Tests to skip when MICROPY_ERROR_REPORTING is at a certain level.
 error_reporting_tests_to_skip = {
-    # Skip at level MICROPY_ERROR_REPORTING_NONE.
-    "none": (
+    # Skip at level MICROPY_ERROR_REPORTING_TERSE.
+    "terse": (
+        "cmdline/repl_paste.py",
+        # This test needs updates before being removed from this list.
+        "extmod/vfs_blockdev_invalid.py",
         "micropython/heapalloc_exc_compressed.py",
         "micropython/heapalloc_exc_compressed_emg_exc.py",
         "micropython/opt_level_lineno.py",
         "misc/print_exception.py",
+        "misc/sys_settrace_features.py",
     ),
 }
-# Skip at level MICROPY_ERROR_REPORTING_TERSE.
-error_reporting_tests_to_skip["terse"] = error_reporting_tests_to_skip["none"]
+# Skip at level MICROPY_ERROR_REPORTING_NONE.
+error_reporting_tests_to_skip["none"] = error_reporting_tests_to_skip["terse"] + (
+    "extmod/asyncio_gather_notimpl.py",
+)
 
 # Tests with known intermittent failures. These tests still run, but failures
 # are reclassified as "ignored" instead of "fail" so they don't affect the CI
@@ -1133,7 +1137,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
         # Print a note if this looks like it might have been a misfired unittest
         if not uses_unittest and not test_passed:
-            with open(test_file, "r") as f:
+            with open(test_file, "r", encoding="utf-8") as f:
                 if any(re.match("^import.+unittest", l) for l in f.readlines()):
                     print(
                         "NOTE: {} may be a unittest that doesn't run unittest.main()".format(
@@ -1211,6 +1215,9 @@ the last matching regex is used:
   run-tests.py -e '/big.+int' - include all, then exclude by regex
   run-tests.py -e async -i async_foo - include all, exclude async, yet still include async_foo
 """,
+    )
+    cmd_parser.add_argument(
+        "-c", "--trace-output", action="store_true", help="trace test output while running"
     )
     cmd_parser.add_argument(
         "-t", "--test-instance", default="unix", help="the MicroPython instance to test"

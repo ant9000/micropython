@@ -11,7 +11,6 @@ typedef enum {
 
 extern const mp_obj_type_t machine_touchpad_type;
 extern const mp_obj_type_t machine_dac_type;
-extern const mp_obj_type_t machine_sdcard_type;
 
 void machine_init(void);
 void machine_deinit(void);
@@ -19,7 +18,6 @@ void machine_pins_init(void);
 void machine_pins_deinit(void);
 void machine_pwm_deinit_all(void);
 // TODO: void machine_rmt_deinit_all(void);
-void machine_timer_deinit_all(void);
 void machine_uart_deinit_all(void);
 void machine_i2s_init0();
 

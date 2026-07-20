@@ -40,12 +40,6 @@
 #include "modmachine.h"
 #include "machine_rtc.h"
 
-#if MICROPY_HW_ENABLE_SDCARD
-#define MICROPY_PY_MACHINE_SDCARD_ENTRY { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&machine_sdcard_type) },
-#else
-#define MICROPY_PY_MACHINE_SDCARD_ENTRY
-#endif
-
 #if SOC_TOUCH_SENSOR_SUPPORTED
 #define MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY { MP_ROM_QSTR(MP_QSTR_TouchPad), MP_ROM_PTR(&machine_touchpad_type) },
 #else
@@ -56,7 +50,6 @@
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
     \
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) }, \
-    MICROPY_PY_MACHINE_SDCARD_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
     MICROPY_PY_MACHINE_TOUCH_PAD_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&machine_rtc_type) }, \
@@ -106,13 +99,18 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 80MHz or 120MHz"));
     }
     #else
-    if (freq != 20 && freq != 40 && freq != 80 && freq != 160
-        #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
+    if (freq != 20 && freq != 40 && freq != 80
+        #if !(CONFIG_IDF_TARGET_ESP32H2)
+        && freq != 160
+        #endif
+        #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2)
         && freq != 240
         #endif
         ) {
         #if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
         mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz or 160MHz"));
+        #elif CONFIG_IDF_TARGET_ESP32H2
+        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz or 80Mhz"));
         #else
         mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
         #endif
