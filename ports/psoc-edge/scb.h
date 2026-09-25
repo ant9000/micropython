@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Linaro Limited
+ * Copyright (c) 2026 Infineon Technologies AG
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <zephyr/kernel.h>
-#include "zephyr_getchar.h"
 
-int real_main(void);
-int mp_console_init(void);
+#ifndef MICROPY_INCLUDED_PSOC_EDGE_SCB_H
+#define MICROPY_INCLUDED_PSOC_EDGE_SCB_H
 
-int main(void) {
-    #ifdef CONFIG_CONSOLE_SUBSYS
-    mp_console_init();
-    #else
-    zephyr_getchar_init();
-    #endif
-    real_main();
+#include "sys_int.h"
+#include "py/obj.h"
 
-    return 0;
-}
+typedef void (*scb_parent_irq_handler_t)(mp_obj_t scb_obj);
+
+typedef struct _scb_obj_t {
+    int8_t id;
+    CySCB_Type *scb;
+    sys_int_cfg_t irq;
+    en_clk_dst_t clk;
+    uint8_t mmio_slave_nr;
+    mp_obj_t parent;
+    scb_parent_irq_handler_t parent_handler;
+} scb_obj_t;
+
+scb_obj_t *scb_obj_alloc(uint8_t scb, mp_obj_t parent, scb_parent_irq_handler_t handler);
+void scb_obj_free(scb_obj_t *scb);
+bool scb_is_free(uint8_t scb);
+
+#endif // MICROPY_INCLUDED_PSOC_EDGE_SCB_H

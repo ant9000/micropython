@@ -123,6 +123,7 @@ function ci_code_size_build {
             OUTFILE=$2
             IGNORE_ERRORS=$3
 
+            git restore ports/esp32/lockfiles/*  # esp32 port may update local lockfile
             git checkout --detach $COMMIT
             git submodule update --init $SUBMODULES
             git show -s
@@ -251,23 +252,29 @@ function ci_esp32_build_common {
     make ${MAKEOPTS} -C ports/esp32 submodules
 }
 
-function ci_esp32_build_cmod_spiram_s2 {
+function ci_esp32_build_cmod_spiram_d2wd {
     ci_esp32_build_common
 
+    # Combined USER_C_MODULES + freeze manifest test on ESP32_GENERIC.
     make ${MAKEOPTS} -C ports/esp32 \
         USER_C_MODULES=../../../examples/usercmodule/micropython.cmake \
-        FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest_test.py
+        FROZEN_MANIFEST="$(pwd)/ports/esp32/boards/manifest_test.py"
 
     # Test building native .mpy with xtensawin architecture.
     ci_native_mpy_modules_build xtensawin
 
-    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC BOARD_VARIANT=SPIRAM
-    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
+    # Test the c_module() codepath on the SPIRAM variant.
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC BOARD_VARIANT=SPIRAM \
+        FROZEN_MANIFEST="$(pwd)/tests/tools/manifest_c_module.py"
+
+    # D2WD is the variant with smallest application partition in flash
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC BOARD_VARIANT=D2WD
 }
 
-function ci_esp32_build_s3_c3 {
+function ci_esp32_build_s2_s3_c3 {
     ci_esp32_build_common
 
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S3
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
 }
@@ -430,6 +437,7 @@ function ci_qemu_build_arm_thumb_softfp {
 
 function ci_qemu_build_arm_thumb_hardfp {
     ci_qemu_build_arm_prepare
+    make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu submodules
     make BOARD=MPS2_AN500 ${MAKEOPTS} -C ports/qemu test_full
 
     # Test building native .mpy with all ARM-M hardfp architectures.
@@ -500,9 +508,11 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C ports/rp2 submodules
     make ${MAKEOPTS} -C ports/rp2
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W submodules
+    # Legacy USER_C_MODULES coverage on RPI_PICO_W.
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W USER_C_MODULES=../../examples/usercmodule/micropython.cmake
     make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2 submodules
-    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2
+    # Test c_module() on RPI_PICO2.
+    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO2 FROZEN_MANIFEST="$(pwd)/tests/tools/manifest_c_module.py"
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO submodules
     # This build doubles as a build test for disabling threads in the config
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO CFLAGS_EXTRA=-DMICROPY_PY_THREAD=0
@@ -558,6 +568,12 @@ function ci_stm32_pyb_build {
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBV10 CFLAGS_EXTRA='-DMBOOT_FSLOAD=1 -DMBOOT_VFS_LFS2=1'
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=STM32F769DISC CFLAGS_EXTRA='-DMBOOT_ADDRESS_SPACE_64BIT=1 -DMBOOT_SDCARD_ADDR=0x100000000ULL -DMBOOT_SDCARD_BYTE_SIZE=0x400000000ULL -DMBOOT_FSLOAD=1 -DMBOOT_VFS_FAT=1'
+}
+
+function ci_stm32_build_cmod {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/stm32 submodules
+    make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 FROZEN_MANIFEST="$(pwd)/tests/tools/manifest_c_module.py"
 }
 
 function ci_stm32_nucleo_build {

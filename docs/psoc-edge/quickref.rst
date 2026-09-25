@@ -21,6 +21,13 @@ working with this port it may be useful to get an overview of the microcontrolle
    general.rst
    installation.rst
 
+.. note::
+
+    You can follow the latest progress for this port in the `Infineon MicroPython
+    PSOC™ Edge fork <https://github.com/Infineon/micropython-psoc-edge>`_.
+    We are working to bring those features here. Meanwhile, you can try them early
+    by installing the fork version.
+
 Pins and GPIO
 -------------
 
@@ -157,6 +164,12 @@ The following parameters have port-specific behavior:
 
     **None** of the non-core methods from the Pin API are currently implemented for this port.
 
+Signal
+^^^^^^
+
+There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
+which can be used to invert a pin. Useful for illuminating active-low LEDs
+using ``Signal.on()`` or ``Signal.value(1)``.
 
 Real time clock (RTC)
 ---------------------
@@ -230,12 +243,6 @@ Constructor
    
    - ``bits``. Only 8 bits.
 
-   These are planned for future implementation, but yet unavailable:
-
-   - ``rts``
-   - ``cts``
-   - ``flow``
-       
 .. Note::
 
    These parameters are not implemented:
