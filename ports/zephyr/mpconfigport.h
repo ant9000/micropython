@@ -52,7 +52,7 @@
 #define MICROPY_HEAP_SIZE (16 * 1024)
 #endif
 
-#if MICROPY_EMIT_THUMB
+#if (defined(__thumb2__) || defined(__thumb__))
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 #endif
 
